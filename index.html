@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Happy Birthday Devaansh 🎉</title>
+<style>
+  :root{--bg1:#0b1020;--bg2:#2b0636;--accent:#ffcc00;--accent-2:#ff6a88;--muted:#dfe6f0}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:#fff}
+  .container{max-width:1100px;margin:0 auto;padding:28px;text-align:center}
+  .hero{display:flex;gap:20px;align-items:center;justify-content:space-between;padding:20px;background:rgba(255,255,255,0.02);border-radius:12px}
+  h1{margin:0;font-size:2rem}
+  .sub{color:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:18px}
+  .photo{background:rgba(255,255,255,0.02);padding:8px;border-radius:10px;cursor:pointer;position:relative;overflow:hidden}
+  .photo img{width:100%;height:160px;object-fit:cover;border-radius:8px;display:block;transition:transform .35s}
+  .photo:hover img{transform:scale(1.05)}
+  .pcap{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,0.45);padding:6px 8px;border-radius:8px;font-weight:700;color:#fff}
+
+  /* video overlay */
+  .video-overlay{position:fixed;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.95),rgba(0,0,0,0.9));display:flex;align-items:center;justify-content:center;z-index:1500}
+  .video-card{
+    width:92%;
+    max-width:720px;            /* phone-size for portrait */
+    border-radius:14px;
+    overflow:hidden;
+    position:relative;
+    box-shadow:0 30px 90px rgba(0,0,0,0.6);
+    background:#000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    aspect-ratio: 9 / 16;       /* portrait aspect ratio */
+    height: auto;
+    max-height: 88vh;
+  }
+  /* video should preserve full frame without cropping */
+  video{
+    width:auto;
+    max-width:100%;
+    height:100%;
+    max-height:100%;
+    object-fit:contain;         /* show entire portrait frame */
+    background:#000;
+    display:block;
+  }
+
+  .controls{position:absolute;top:12px;right:12px;display:flex;gap:8px;z-index:20}
+  .btn{background:linear-gradient(90deg,var(--accent),var(--accent-2));border:none;color:#111;padding:10px 14px;border-radius:999px;cursor:pointer;font-weight:800;box-shadow:0 14px 40px rgba(0,0,0,0.45)}
+  .big-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:16px 28px;border-radius:999px;font-size:18px;z-index:30;display:block}
+  .overlay-msg{position:absolute;left:12px;bottom:12px;z-index:30;background:rgba(0,0,0,0.45);padding:8px 12px;border-radius:8px;color:#fff;font-weight:700;display:none}
+  .error{position:absolute;left:50%;top:18px;transform:translateX(-50%);z-index:40;background:#3a0b0b;padding:10px 14px;border-radius:10px;color:#ffd6d6;font-weight:700;display:none}
+
+  /* letter and collage */
+  .letter{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:none;align-items:center;justify-content:center;z-index:1600}
+  .letter-card{width:90%;max-width:720px;background:#fff;color:#111;border-radius:12px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,0.4)}
+  .letter-card p{line-height:1.5;white-space:pre-wrap}
+  .letter-close{margin-top:12px;background:var(--accent);border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:800}
+  .collage{position:fixed;inset:0;background:rgba(0,0,0,0.92);display:none;align-items:center;justify-content:center;z-index:1400}
+  .collage-inner{width:95%;max-width:1100px;padding:18px;color:#fff}
+  .collage-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .collage-grid img{width:100%;height:150px;object-fit:cover;border-radius:8px;display:block}
+  canvas{position:fixed;left:0;top:0;pointer-events:none;z-index:1700}
+  .diagnostic{margin-top:12px;color:#ddd;font-size:0.95rem;text-align:center}
+  @media (max-width:880px){video{height:60vh}.collage-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+  <canvas id="confetti"></canvas>
+
+  <div class="container">
+    <div class="hero">
+      <div>
+        <h1>Happy Birthday, Devaansh 🎂</h1>
+        <div class="sub">A page with love — memories, wishes & surprises.</div>
+      </div>
+      <div style="width:160px;height:160px;border-radius:12px;overflow:hidden;flex-shrink:0;box-shadow:0 18px 50px rgba(0,0,0,0.5)">
+        <img src="Devaansh1.jpg" alt="Devaansh" style="width:100%;height:100%;object-fit:cover;display:block">
+      </div>
+    </div>
+
+    <h2 style="margin-top:20px">Photos & Memories</h2>
+    <div class="grid" id="gallery"></div>
+
+    <div class="diagnostic" id="diagnostic">Preparing…</div>
+    <footer style="margin-top:18px;color:var(--muted)">Tip: serve via <code>python -m http.server</code> for reliable testing.</footer>
+  </div>
+
+  <!-- video overlay -->
+  <div class="video-overlay" id="videoOverlay" aria-hidden="false">
+    <div class="video-card" role="dialog" aria-label="Birthday video">
+      <video id="introVideo" poster="Devaansh1.jpg" playsinline preload="auto" crossorigin="anonymous"></video>
+
+      <button id="bigPlay" class="btn big-play">Into the Memory Lane ▶</button>
+      <div class="overlay-msg" id="overlayMsg" role="status" aria-live="polite"></div>
+      <div class="error" id="errorMsg">Video failed to load — check DevTools Network/Console.</div>
+    </div>
+  </div>
+
+  <!-- letter -->
+  <div class="letter" id="letter">
+    <div class="letter-card">
+      <h2>Dear Devaansh,</h2>
+      <p id="letterContent"></p>
+      <button id="closeLetter" class="letter-close">Close & See Collage 🎁</button>
+    </div>
+  </div>
+
+  <!-- collage -->
+  <div class="collage" id="collage">
+    <div class="collage-inner">
+      <h2 style="margin-top:0">Your Collage — For a Lifetime of Memories</h2>
+      <div class="collage-grid" id="collageGrid"></div>
+    </div>
+  </div>
+
+  <!-- background music -->
+  <audio id="bgAudio" preload="auto"></audio>
+
+<script>
+/* ---------- CONFIG ---------- */
+const localVideo = 'Sample.mp4'; // your file name (case-sensitive)
+const localAudio = 'ReelAudio-13626.mp3';
+const IMAGES = []; for(let i=1;i<=10;i++) IMAGES.push(`Devaansh${i}.jpg`);
+const captions = [
+  "Baby days: pure love","First goals: the little winner","Crazy friends & adventures",
+  "Family time — smile forever","College memories — mischief!","Travel day — explorer",
+  "Birthday blasts — cake time","That unforgettable laugh","Champion moments","Always our pride"
+];
+const fallbackVideo = 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4';
+const fallbackAudio = 'https://file-examples-com.github.io/uploads/2017/11/file_example_MP3_700KB.mp3';
+const fallbackImage = 'https://via.placeholder.com/600x400?text=Photo+missing';
+
+/* ---------- ELEMENTS ---------- */
+const diag = document.getElementById('diagnostic');
+const videoOverlay = document.getElementById('videoOverlay');
+const introVideo = document.getElementById('introVideo');
+const bigPlay = document.getElementById('bigPlay');
+const overlayMsg = document.getElementById('overlayMsg');
+const errorMsg = document.getElementById('errorMsg');
+
+const gallery = document.getElementById('gallery');
+const letter = document.getElementById('letter');
+const letterContent = document.getElementById('letterContent');
+const closeLetter = document.getElementById('closeLetter');
+const collage = document.getElementById('collage');
+const collageGrid = document.getElementById('collageGrid');
+const bgAudio = document.getElementById('bgAudio');
+
+const canvas = document.getElementById('confetti'); const ctx = canvas.getContext('2d');
+function resizeCanvas(){ canvas.width = innerWidth; canvas.height = innerHeight; } window.addEventListener('resize', resizeCanvas); resizeCanvas();
+
+/* the video card (we request fullscreen on this) */
+const videoCardEl = document.querySelector('.video-card');
+
+/* ---------- HELPERS ---------- */
+function showStatus(msg, t=4000){ overlayMsg.textContent = msg; overlayMsg.style.display='block'; if(t)setTimeout(()=>overlayMsg.style.display='none',t); console.log('[STATUS]',msg); }
+function setVideoSource(src){ introVideo.pause(); introVideo.src = src; introVideo.load(); }
+
+/* fullscreen helpers */
+async function requestFullScreenFor(element){
+  try{
+    if(element.requestFullscreen) await element.requestFullscreen();
+    else if(element.webkitRequestFullscreen) element.webkitRequestFullscreen();
+    else if(element.mozRequestFullScreen) element.mozRequestFullScreen();
+    else if(element.msRequestFullscreen) element.msRequestFullscreen();
+  }catch(e){ console.warn('requestFullscreen failed', e); }
+}
+async function exitFullScreenIfAny(){
+  try{
+    if(document.exitFullscreen) await document.exitFullscreen();
+    else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+    else if(document.mozCancelFullScreen) document.mozCancelFullScreen();
+    else if(document.msExitFullscreen) document.msExitFullscreen();
+    // try unlocking orientation when exiting fullscreen (best-effort)
+    try{ if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); }catch(e){}
+  }catch(e){ console.warn('exit fullscreen failed', e); }
+}
+
+/* ---------- GALLERY ---------- */
+function renderGallery(){
+  gallery.innerHTML='';
+  IMAGES.forEach((src,i)=>{
+    const div=document.createElement('div'); div.className='photo';
+    const img=document.createElement('img'); img.src = src; img.alt = `pic${i+1}`; img.onerror = ()=>img.src=fallbackImage;
+    div.appendChild(img);
+    const cap=document.createElement('div'); cap.className='pcap'; cap.textContent = captions[i]||`Memory ${i+1}`; div.appendChild(cap);
+    div.addEventListener('click',()=>openCollage());
+    gallery.appendChild(div);
+  });
+}
+
+/* ---------- PLAY BUTTON HANDLER (user gesture) ----------
+   On first click we try the local file; if that fails we automatically switch to the fallback
+   and attempt to play it — all inside the same user gesture so browsers permit sound & fullscreen.
+*/
+bigPlay.addEventListener('click', async ()=>{
+  bigPlay.disabled = true;
+  bigPlay.style.opacity = '0.6';
+  diag.textContent = 'Trying to play local video...';
+
+  // Attempt local file
+  setVideoSource(localVideo);
+  try{
+    introVideo.muted = false;
+    await introVideo.play();                // user gesture -> allowed
+
+    // try to lock orientation (optional, may fail)
+    try{
+      if(screen.orientation && screen.orientation.lock){
+        // lock portrait so fullscreen stays portrait on supporting mobile browsers
+        await screen.orientation.lock('portrait-primary');
+      }
+    }catch(e){ /* ignore: not supported or permission denied */ }
+
+    showStatus('Playing local video. Requesting fullscreen...');
+    await requestFullScreenFor(videoCardEl); // request fullscreen for card instead of video element
+    bigPlay.style.display = 'none';
+    return;
+  }catch(errLocal){
+    console.warn('Local play failed:', errLocal);
+  }
+
+  // If local fails (404/codec), try fallback
+  diag.textContent = 'Local video failed — trying public fallback...';
+  setVideoSource(fallbackVideo);
+  try{
+    introVideo.muted = false;
+    await introVideo.play();
+    try{
+      if(screen.orientation && screen.orientation.lock){
+        await screen.orientation.lock('portrait-primary');
+      }
+    }catch(e){}
+    showStatus('Playing fallback video. Requesting fullscreen...');
+    await requestFullScreenFor(videoCardEl);
+    bigPlay.style.display = 'none';
+    return;
+  }catch(errFallback){
+    console.warn('Fallback play also failed:', errFallback);
+    bigPlay.disabled = false;
+    bigPlay.style.opacity = '1';
+    showStatus('Could not start video. Check DevTools Network/Console.', 6000);
+  }
+});
+
+/* ---------- ENDED ---------- */
+introVideo.addEventListener('ended', async ()=>{
+  await exitFullScreenIfAny();
+  hideVideoOverlay();
+  showLetter();
+});
+
+function showVideoOverlay(){ videoOverlay.style.display='flex'; videoOverlay.setAttribute('aria-hidden','false'); }
+function hideVideoOverlay(){ videoOverlay.style.display='none'; videoOverlay.setAttribute('aria-hidden','true'); }
+
+/* ---------- LETTER & COLLAGE ---------- */
+const LETTER_TEXT = `Happy Birthday Devaansh!\n\nMy dear brother, on this special day I want you to know how proud I am of you. From the little moments to the big wins, you've filled our lives with laughter, courage and endless memories. May this year bring you health, success and adventures beyond your imagination. Stay kind, stay curious, and never stop smiling.\n\nWith all my love,\nHarshu`;
+function showLetter(){ letterContent.textContent = LETTER_TEXT; letter.style.display = 'flex'; letter.setAttribute('aria-hidden','false'); try{ speak('Happy Birthday Devaansh!'); }catch(e){} }
+closeLetter.addEventListener('click', ()=> {
+  letter.style.display = 'none';
+  openCollage();
+  bgAudio.src = localAudio;
+  bgAudio.play().catch(()=>{});
+  spawnConfetti();
+});
+
+function openCollage(){
+  collage.style.display = 'flex';
+  collage.setAttribute('aria-hidden','false');
+  collageGrid.innerHTML = '';
+  IMAGES.forEach(src=>{
+    const img=document.createElement('img'); img.src = src; img.onerror = ()=> img.src = fallbackImage; collageGrid.appendChild(img);
+  });
+}
+
+/* ---------- video orientation handling ---------- */
+introVideo.addEventListener('loadedmetadata', ()=>{
+  // videoWidth/videoHeight reflect the intrinsic orientation/shape
+  try{
+    if(introVideo.videoHeight > introVideo.videoWidth){
+      // portrait video
+      videoCardEl.style.aspectRatio = '9 / 16';
+      introVideo.style.objectFit = 'contain';
+    } else {
+      // landscape video
+      videoCardEl.style.aspectRatio = '16 / 9';
+      introVideo.style.objectFit = 'cover';
+    }
+  }catch(e){ console.warn('orientation handling error', e); }
+});
+
+/* ---------- CONFETTI ---------- */
+let conf = [];
+function spawnConfetti(){
+  for(let i=0;i<200;i++){
+    conf.push({x:Math.random()*canvas.width,y:-Math.random()*canvas.height-20,w:6+Math.random()*10,h:8+Math.random()*14,vx:-1+Math.random()*2,vy:2+Math.random()*4,r:Math.random()*360,c:`hsl(${Math.floor(Math.random()*360)},80%,60%)`});
+  }
+  runConfetti();
+}
+function runConfetti(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  conf.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.03; p.r+=p.vx*2; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r*Math.PI/180); ctx.fillStyle=p.c; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore(); });
+  conf = conf.filter(p=>p.y < canvas.height + 60);
+  if(conf.length) requestAnimationFrame(runConfetti);
+}
+
+/* ---------- TTS ---------- */
+function speak(text){ if(!('speechSynthesis' in window)) return; const u=new SpeechSynthesisUtterance(text); u.rate = 0.95; speechSynthesis.speak(u); }
+
+/* ---------- STARTUP ---------- */
+window.addEventListener('DOMContentLoaded', ()=>{
+  diag.textContent = 'Ready — step into the memory lane and press the button.';
+  renderGallery();
+  // show overlay with play button visible but do NOT call play()
+  showVideoOverlay();
+});
+
+/* ---------- MISC ---------- */
+window.addEventListener('resize', resizeCanvas);
+document.addEventListener('dragstart', e=>{ if(e.target.tagName==='IMG') e.preventDefault(); });
+window.addEventListener('keydown', async (e)=>{ if(e.key==='Escape'){ if(collage.style.display==='flex') collage.style.display='none'; else if(letter.style.display==='flex') letter.style.display='none'; else if(videoOverlay.style.display==='flex'){ try{ introVideo.pause(); }catch(e){}; await exitFullScreenIfAny(); hideVideoOverlay(); } }});
+</script>
+</body>
+</html>
